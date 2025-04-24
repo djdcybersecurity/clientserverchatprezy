@@ -1,3 +1,4 @@
+# client.py
 import socket
 import threading
 
@@ -8,34 +9,31 @@ def listen_for_messages(sock):
             if msg:
                 print(msg)
         except:
-            # Connection died — probably stepped on a LAN cable
+            # You either disconnected or tripped over a virtual cable
             break
 
 def start_client(server_ip="127.0.0.1", port=8080):
-    # Reach out and touch... the server!
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((server_ip, port))
 
     username = input("Choose your legendary username: ").strip()
     sock.send(username.encode())
 
-    # We’re multitasking now! One thread for ears (listener), one for mouth (input)
+    # One thread is all ears; the other is all talk
     threading.Thread(target=listen_for_messages, args=(sock,), daemon=True).start()
 
     while True:
         msg = input()
         if msg.lower() == "exit":
-            # Hit the eject button
             sock.send("server:exit".encode())
             break
         elif msg.lower() == "who":
-            # Who’s in the digital room?
             sock.send("server:who".encode())
         else:
-            # Type like a boss
+            # Standard syntax: <recipient>:<message>
             sock.send(msg.encode())
 
-    # Closing time. Every client has to go home
+    # Show’s over, closing the curtains
     sock.close()
 
 if __name__ == "__main__":
